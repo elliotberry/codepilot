@@ -6,6 +6,27 @@ import path from 'node:path';
  * Represents an indexed document stored on disk.
  */
 class LocalDocument {
+    /**
+     * Returns the folder path where the document is stored.
+     */
+    get folderPath() {
+        return this._index.folderPath;
+    }
+
+    /**
+     * Returns the ID of the document.
+     */
+    get id() {
+        return this._id;
+    }
+
+    /**
+     * Returns the URI of the document.
+     */
+    get uri() {
+        return this._uri;
+    }
+
     constructor(index, id, uri) {
         this._index = index;
         this._id = id;
@@ -75,27 +96,6 @@ class LocalDocument {
         }
 
         return this._text;
-    }
-
-    /**
-     * Returns the folder path where the document is stored.
-     */
-    get folderPath() {
-        return this._index.folderPath;
-    }
-
-    /**
-     * Returns the ID of the document.
-     */
-    get id() {
-        return this._id;
-    }
-
-    /**
-     * Returns the URI of the document.
-     */
-    get uri() {
-        return this._uri;
     }
 }
 

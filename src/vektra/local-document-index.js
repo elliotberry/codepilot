@@ -11,6 +11,22 @@ import Tokenizer from "./tokenizer.js";
  * Represents a local index of documents stored on disk.
  */
 class LocalDocumentIndex {
+  get embeddings() {
+    return this._embeddings;
+  }
+
+  get folderPath() {
+    return this._folderPath;
+  }
+
+  get indexName() {
+    return this._indexName;
+  }
+
+  get tokenizer() {
+    return this._tokenizer;
+  }
+
   constructor(config) {
     this._folderPath = config.folderPath || "./";
     this._indexName = "index.json";
@@ -27,9 +43,9 @@ class LocalDocumentIndex {
       config.tokenizer || this._chunkingConfig.tokenizer || new Tokenizer();
     this._chunkingConfig.tokenizer = this._tokenizer;
 
-    this._data = null;
-    this._catalog = null;
-    this._newCatalog = null;
+    this._data = undefined;
+    this._catalog = undefined;
+    this._newCatalog = undefined;
     this._update = false;
   }
 
@@ -47,7 +63,7 @@ class LocalDocumentIndex {
 
   cancelUpdate() {
     this._update = false;
-    this._newCatalog = null;
+    this._newCatalog = undefined;
   }
 
   async createIndex(config = { deleteIfExists: false, version: 1 }) {
@@ -119,7 +135,7 @@ class LocalDocumentIndex {
         JSON.stringify(this._newCatalog)
       );
       this._catalog = this._newCatalog;
-      this._newCatalog = null;
+      this._newCatalog = undefined;
     } catch (error) {
       throw new Error(`Error saving document catalog: ${error.toString()}`);
     }
@@ -194,24 +210,24 @@ class LocalDocumentIndex {
   }
 
   async listDocuments() {
-    const docs = {};
+    const documents = {};
     const chunks = await this.listItems();
     for (const chunk of chunks) {
       const metadata = chunk.metadata;
-      if (!docs[metadata.documentId]) {
-        docs[metadata.documentId] = [];
+      if (!documents[metadata.documentId]) {
+        documents[metadata.documentId] = [];
       }
-      docs[metadata.documentId].push({ item: chunk, score: 1 });
+      documents[metadata.documentId].push({ item: chunk, score: 1 });
     }
 
     const results = [];
-    for (const documentId in docs) {
+    for (const documentId in documents) {
       const uri = await this.getDocumentUri(documentId);
       const documentResult = new LocalDocumentResult(
         this,
         documentId,
         uri,
-        docs[documentId],
+        documents[documentId],
         this._tokenizer
       );
       results.push(documentResult);
@@ -445,22 +461,6 @@ class LocalDocumentIndex {
     }
 
     return new LocalDocument(this, documentId, uri);
-  }
-
-  get embeddings() {
-    return this._embeddings;
-  }
-
-  get folderPath() {
-    return this._folderPath;
-  }
-
-  get indexName() {
-    return this._indexName;
-  }
-
-  get tokenizer() {
-    return this._tokenizer;
   }
 }
 

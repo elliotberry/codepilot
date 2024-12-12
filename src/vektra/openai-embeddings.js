@@ -1,7 +1,7 @@
 export class OpenAIEmbeddings {
   constructor(options) {
     this.maxTokens = options.maxTokens ?? 4096
-    this.UserAgent = "AlphaWave"
+    this.UserAgent = "penis"
     this.options = options
 
     this._clientType = ClientType.OpenAI

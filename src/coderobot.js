@@ -40,7 +40,7 @@ class Coderobot {
       input: process.stdin,
       output: process.stdout,
     });
-
+  
     const model = this.createModel();
     const wave = new AlphaWave({
       model,
@@ -51,9 +51,8 @@ class Coderobot {
         new UserMessage("{{$input}}", 500),
       ]),
     });
-
+  
     const completePrompt = async (input) => {
-      console.log("Processing input...");
       const result = await wave.completePrompt(input);
       switch (result.status) {
         case "success": {
@@ -61,10 +60,10 @@ class Coderobot {
           if (function_call) {
             const entry = this._functions.get(function_call.name);
             if (entry) {
-              const arguments_ = function_call.arguments ? JSON.parse(function_call.arguments) : {};
-              const result = await entry.fn(arguments_);
+              const args = function_call.arguments ? JSON.parse(function_call.arguments) : {};
+              const result = await entry.fn(args);
               wave.addFunctionResultToHistory(function_call.name, result);
-              await completePrompt("");
+              await completePrompt(""); // Retry with updated context
             } else {
               respond(`Function '${function_call.name}' not found.`);
             }
@@ -80,39 +79,13 @@ class Coderobot {
         }
       }
     };
-
+  
     const respond = async (botMessage) => {
       if (botMessage) console.log(botMessage);
-    
-      const renderExitTip = () => {
-        // Save current cursor position
-        process.stdout.write("\u001B7");
-        // Move cursor to the bottom line
-        process.stdout.write("\u001B[s"); // Save cursor position
-        process.stdout.write("\u001B[999;0H"); // Move cursor to the last line
-        // Move up two lines to leave space for user input
-        process.stdout.write("\u001B[1A");
-        // Clear the current line and the line above it
-        process.stdout.write("\u001B[2K\u001B[1A\u001B[2K");
-    
-        // Move to the last line to print the exit tip
-        process.stdout.write("\u001B[999;0H"); // Move cursor to the last line
-        // Print the exit tip in magenta color
-        process.stdout.write("\u001B[35m(Tip: Type 'exit' anytime to leave this chat. 🐱‍💻)\u001B[0m\n");
-    
-        // Restore cursor position
-        process.stdout.write("\u001B8");
-      };
-    
+  
       const promptUser = () => {
-        // Render the exit tip before showing the prompt
-        renderExitTip();
         rl.question("User: ", async (input) => {
           if (input.toLowerCase() === "exit") {
-            // Clear the tip line and extra input lines when exiting
-            process.stdout.write("\u001B[999;0H"); // Move cursor to the last line
-            process.stdout.write("\u001B[2K"); // Clear the last line
-            process.stdout.write("\u001B[1A\u001B[2K"); // Clear the line above
             rl.close();
             process.exit();
             return;
@@ -121,10 +94,10 @@ class Coderobot {
           promptUser(); // Keep the interaction going
         });
       };
-    
-      promptUser(); // Start the interaction
+  
+      promptUser(); // Start interaction
     };
-
+  
     respond("Hello, how can I help you?");
   }
 

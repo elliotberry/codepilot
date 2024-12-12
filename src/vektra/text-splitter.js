@@ -52,7 +52,7 @@ class TextSplitter {
         }
       } else {
         currentChunk = chunk
-        currentLength = chunk.tokens.length
+      //  currentLength = chunk.tokens.length
       }
     }
     if (currentChunk) {
